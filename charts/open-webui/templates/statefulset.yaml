@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "open-webui.fullname" . }}
+spec:
+  serviceName: {{ include "open-webui.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "open-webui.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "open-webui.labels" . | nindent 8 }}
+      annotations:
+    spec:
+      containers:
+      - name: open-webui
+        image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag | quote }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: http
+        env:
+        {{- range $k,$v := .Values.openWebui.env }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        volumeMounts:
+        - name: data
+          mountPath: /app/backend/data
+        {{- range $v := .Values.volumeMounts }}
+        {{ toYaml $v }}
+        {{- end }}
+      restartPolicy: {{ .Values.restartPolicy }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "open-webui.fullname" . }}-data
+      {{- range $v := .Values.volumes }}
+      {{ toYaml $v }}
+      {{- end }}
+

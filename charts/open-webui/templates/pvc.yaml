@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "open-webui.fullname" . }}-data
+spec:
+  accessModes: {{ toYaml .Values.openWebui.data.accessModes }}
+  {{- if .Values.openWebui.data.storageClassName }}
+  storageClassName: {{ .Values.openWebui.data.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.openWebui.data.size }}
